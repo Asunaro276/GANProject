@@ -139,11 +139,11 @@ if __name__ == "__main__":
     from torch.utils import data
 
     from DCGAN.generator.generator_normal import Generator
-    from DCGAN.discriminator.discriminator import Discriminator
+    from DCGAN.discriminator.discriminator_semi import Discriminator
     from data.data_loader import UnSupervisedImageDataset, ImageTransform, make_datapath_list
 
     G = Generator(z_dim=20, image_size=64)
-    D = Discriminator(z_dim=20, image_size=64)
+    D = Discriminator(image_size=64)
 
     G.apply(weights_init)
     D.apply(weights_init)

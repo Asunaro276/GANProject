@@ -4,7 +4,7 @@ import torch
 
 class Generator(nn.Module):
 
-    def __init__(self, z_dim=20, image_size=64):
+    def __init__(self, image_size=64, z_dim=20):
         super(Generator, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -14,6 +14,7 @@ class Generator(nn.Module):
             nn.ReLU(inplace=True))
 
         self.layer2 = nn.Sequential(
+            nn.Dropout2d(p=0.2),
             nn.ConvTranspose2d(image_size * 8, image_size * 4,
                                kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(image_size * 4),
@@ -26,6 +27,7 @@ class Generator(nn.Module):
             nn.ReLU(inplace=True))
 
         self.layer4 = nn.Sequential(
+            nn.Dropout2d(p=0.2),
             nn.ConvTranspose2d(image_size * 2, image_size,
                                kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(image_size),

@@ -3,8 +3,8 @@ import torch
 
 
 class Discriminator(nn.Module):
-    def __init__(self, z_dim=20, image_size=64):
-        super(Discriminator, self).__init__()
+    def __init__(self, image_size=64):
+        super(SemiSupervisedDiscriminator, self).__init__()
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(1, image_size, kernel_size=4,
@@ -26,7 +26,7 @@ class Discriminator(nn.Module):
                       stride=2, padding=1),
             nn.LeakyReLU(0.1, inplace=True))
 
-        self.last = nn.Conv2d(image_size * 8, 1, kernel_size=4, stride=1)
+        self.last_supervised = nn.Sequential(nn.Conv2d(image_size * 8, 1, kernel_size=4, stride=1))
 
     def forward(self, x):
         out = self.layer1(x)
@@ -41,7 +41,7 @@ class Discriminator(nn.Module):
 if __name__ == "__main__":
     from DCGAN.generator import Generator
 
-    D = Discriminator(z_dim=20, image_size=64)
+    D = Discriminator(image_size=64)
 
     G = Generator()
     input_z = torch.randn(1, 20)
