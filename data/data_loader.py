@@ -43,7 +43,7 @@ class ImageDataset(data.Dataset):
         if self.label is not None:
             label_mask = np.zeros(len(self.label))
             num_label = len(set(self.label))
-            label_mask[0:50*num_label] = 1
+            label_mask[0:10*num_label] = 1
             np.random.shuffle(label_mask)
             label_mask = torch.LongTensor(label_mask)
             return label_mask

@@ -2,9 +2,9 @@ import torch
 from torch import nn
 
 
-class Discriminator(nn.Module):
+class Classifier(nn.Module):
     def __init__(self, input_size=8, output_size=8, hidden_size=56, num_class=2):
-        super(Discriminator, self).__init__()
+        super(Classifier, self).__init__()
 
         self.layer1 = nn.Sequential(nn.Linear(input_size, hidden_size),
                                     nn.LeakyReLU(0.1, inplace=True))
@@ -19,4 +19,5 @@ class Discriminator(nn.Module):
         out = self.layer2(out)
         out_supervised = self.classify_layer(out)
 
-        return out, out_supervised
+        return out_supervised
+

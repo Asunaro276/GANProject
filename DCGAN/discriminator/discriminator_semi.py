@@ -19,22 +19,22 @@ class SemiSupervisedDiscriminator(nn.Module):
             nn.LeakyReLU(0.1, inplace=True))
 
         self.layer3 = nn.Sequential(
-            nn.Conv2d(image_size, image_size * 4, kernel_size=4,
+            nn.Conv2d(image_size, image_size * 2, kernel_size=4,
                       stride=2, padding=1),
-            nn.BatchNorm2d(image_size * 4),
+            nn.BatchNorm2d(image_size * 2),
             nn.LeakyReLU(0.1, inplace=True))
 
         self.layer4 = nn.Sequential(
-            nn.Conv2d(image_size * 4, image_size * 8, kernel_size=4,
+            nn.Conv2d(image_size * 2, image_size * 2, kernel_size=4,
                       stride=2, padding=1),
-            nn.BatchNorm2d(image_size * 8),
+            nn.BatchNorm2d(image_size * 2),
             nn.LeakyReLU(0.1, inplace=True))
 
         self.last_supervised = nn.Sequential(
-            nn.Conv2d(image_size * 8, num_classes, kernel_size=4, stride=1))
+            nn.Conv2d(image_size * 2, num_classes, kernel_size=4, stride=1))
 
         self.last_unsupervised = nn.Sequential(
-            nn.Conv2d(image_size * 8, 1, kernel_size=4, stride=1),
+            nn.Conv2d(image_size * 2, 1, kernel_size=4, stride=1),
             nn.Sigmoid())
 
     def forward(self, x):

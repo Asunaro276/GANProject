@@ -3,6 +3,7 @@ from torch import nn
 from time import time
 import os
 import matplotlib.pyplot as plt
+from utils import *
 
 
 def weights_init(m):
@@ -21,7 +22,6 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
 
     g_lr, d_lr, c_lr = 0.0001, 0.0004, 0.0002
     beta1, beta2 = 0.0, 0.9
-    g_optimizer = torch.optim.Adam(G.parameters(), g_lr, (beta1, beta2))
     d_optimizer = torch.optim.Adam(D.parameters(), d_lr, (beta1, beta2))
     c_optimizer = torch.optim.Adam(C.parameters(), c_lr, (beta1, beta2))
 
@@ -29,9 +29,6 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
     criterion_supervised = nn.CrossEntropyLoss(reduction="none")
     criterion_classifier = nn.CrossEntropyLoss(reduction="none")
 
-    z_dim = 20
-
-    G.to(device)
     D.to(device)
     C.to(device)
 
@@ -58,7 +55,6 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
         epoch_d_loss = 0.0
         epoch_c_loss = 0.0
 
-        G.train()
         D.train()
         C.train()
 
@@ -81,7 +77,6 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
             if imges.size()[0] != batch_size:
                 continue
 
-            g_optimizer.zero_grad()
             d_optimizer.zero_grad()
             c_optimizer.zero_grad()
 
@@ -95,9 +90,8 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
             label_fake = torch.full((batch_size,), 0, dtype=torch.float).to(device)
 
             # 偽データ生成
-            input_z = torch.randn(batch_size, z_dim).to(device)
-            input_z = input_z.view(input_z.size(0), input_z.size(1), 1, 1)
-            fake_images = G(input_z)
+            fake_images = G()
+            fake_images = transform_to_8_px(fake_images)
 
             # discriminatorの学習
             d_out_real, d_out_cls = D(imges)
@@ -124,16 +118,19 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
             c_optimizer.step()
 
             # generatorの学習
-            input_z = torch.randn(batch_size, z_dim).to(device)
-            input_z = input_z.view(input_z.size(0), input_z.size(1), 1, 1)
-            fake_images = G(input_z)
+            fake_images = G()
+            x_plus, x_minus = G.calculate_x_plus_minus()
+            x_plus = transform_to_8_px(x_plus)
+            x_minus = transform_to_8_px(x_minus)
+            x_plus, _ = D(x_plus)
+            x_minus, _ = D(x_minus)
+            grad = calculate_grad(x_plus, x_minus)
+            G.update_parameter(grad)
+
             d_out_fake, _ = D(fake_images)
 
             g_loss = criterion_unsupervised(d_out_fake.view(-1), label_real)
-
-            g_optimizer.zero_grad()
             g_loss.backward()
-            g_optimizer.step()
 
             epoch_g_loss += g_loss.item()
             epoch_d_loss += d_loss.item()
@@ -240,20 +237,20 @@ if __name__ == "__main__":
     from torch.utils import data
     from sklearn.model_selection import train_test_split
 
-    from generator.generator_normal import Generator
-    from discriminator.discriminator_semi import SemiSupervisedDiscriminator
+    from generator.generator_quantum import QuantumGenerator, HEA
+    from discriminator.discriminator import Discriminator
     from classifier.classifier import Classifier
-    from data.data_loader import ImageDataset, ImageTransform, make_datapath_list
+    from qSGAN.data_loader import ImageDataset, ImageTransform, make_datapath_list
 
-    z_dim = 20
+    num_qubit = 8
     image_size_g = 64
     image_size_d = 12
-    num_classes = 10
-    G = Generator(image_size_g, z_dim)
-    D = SemiSupervisedDiscriminator(image_size_d, num_classes)
+    num_classes = 2
+    ansatz = HEA(num_qubit, 3)
+    G = QuantumGenerator(ansatz)
+    D = Discriminator(image_size_d, num_classes)
     C = Classifier(image_size_d, num_classes)
 
-    G.apply(weights_init)
     D.apply(weights_init)
 
     print("Finish initialization of the network")
