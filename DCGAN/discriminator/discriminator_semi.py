@@ -34,8 +34,7 @@ class SemiSupervisedDiscriminator(nn.Module):
             nn.Conv2d(image_size * 2, num_classes, kernel_size=4, stride=1))
 
         self.last_unsupervised = nn.Sequential(
-            nn.Conv2d(image_size * 2, 1, kernel_size=4, stride=1),
-            nn.Sigmoid())
+            nn.Conv2d(image_size * 2, 1, kernel_size=4, stride=1))
 
     def forward(self, x):
         out = self.layer1(x)

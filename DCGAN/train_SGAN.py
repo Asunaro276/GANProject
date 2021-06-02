@@ -25,7 +25,7 @@ def train_model(G, D, C, train_dataloader, test_dataloader, num_epochs, save_par
     d_optimizer = torch.optim.Adam(D.parameters(), d_lr, (beta1, beta2))
     c_optimizer = torch.optim.Adam(C.parameters(), c_lr, (beta1, beta2))
 
-    criterion_unsupervised = nn.BCELoss(reduction="mean")
+    criterion_unsupervised = nn.BCEWithLogitsLoss(reduction="mean")
     criterion_supervised = nn.CrossEntropyLoss(reduction="none")
     criterion_classifier = nn.CrossEntropyLoss(reduction="none")
 

@@ -2,9 +2,9 @@ import torch
 from torch import nn
 
 
-class Discriminator(nn.Module):
+class Generator(nn.Module):
     def __init__(self, input_size=1, output_size=8, hidden_size=40):
-        super(Discriminator, self).__init__()
+        super(Generator, self).__init__()
 
         self.layer1 = nn.Sequential(nn.Linear(input_size, hidden_size),
                                     nn.ReLU(inplace=True))

@@ -31,7 +31,8 @@ class Classifier(nn.Module):
             nn.LeakyReLU(0.1, inplace=True))
 
         self.last = nn.Sequential(
-            nn.Conv2d(image_size * 2, num_classes, kernel_size=4, stride=1))
+            nn.Conv2d(image_size * 2, num_classes, kernel_size=4, stride=1),
+            nn.Softmax(dim=0))
 
     def forward(self, x):
         out = self.layer1(x)

@@ -2,8 +2,9 @@ import numpy as np
 import torch
 from torch import nn
 
-from qulacs import ParametricQuantumCircuit, QuantumState
+from qulacs import ParametricQuantumCircuit, QuantumStateGpu
 from qulacs.gate import ParametricRX, ParametricRY, ParametricRZ, CNOT
+
 
 from qSGAN.utils import *
 from qSGAN.optimizer.adam import Adam
@@ -22,6 +23,16 @@ class HEA(ParametricQuantumCircuit):
 
         self._build_circuit()
 
+    @property
+    def parameter(self):
+        params = [self.get_parameter(i) for i in range(self.get_parameter_count())]
+        return params
+
+    @parameter.setter
+    def parameter(self, params_list):
+        for i in range(self.get_parameter_count()):
+            self.set_parameter(i, params_list[i])
+
     def _build_circuit(self):
         depth = self.depth
 
@@ -32,7 +43,7 @@ class HEA(ParametricQuantumCircuit):
     def _build_rotation_layer(self):
         n = self.get_qubit_count()
 
-        rotation_gates = (self.rotation_gates, n)
+        rotation_gates = np.random.choice(self.rotation_gates, n)
         for i in range(n):
             self.add_parametric_gate(rotation_gates[i](i, 2*np.pi*np.random.rand()))
 
@@ -45,24 +56,23 @@ class HEA(ParametricQuantumCircuit):
 
 
 class QuantumGenerator(nn.Module):
-    def __init__(self, ansatz: ParametricQuantumCircuit, batch_size=8, optimizer=Adam()):
+    def __init__(self, num_qubit: int, depth: int = 3, batch_size=7, optimizer=Adam()):
         super(QuantumGenerator, self).__init__()
 
-        self.ansatz = ansatz
         self.batch_size = batch_size
-        self.n_qubit = ansatz.get_qubit_count()
+        self.ansatz = HEA(num_qubit, depth)
+        self.n_qubit = self.ansatz.get_qubit_count()
         self.optimizer = optimizer
         self.out = None
 
     def qunatum_circuit(self, num_samples):
-        state = QuantumState(self.n_qubit)
+        state = QuantumStateGpu(self.n_qubit)
         self.ansatz.update_quantum_state(state)
         out = state.sampling(num_samples)
         return torch.tensor(out)
 
-    def foward(self):
-        out = self.qunatum_circuit(self.batch_size)
-
+    def forward(self, batch_size=7):
+        out = self.qunatum_circuit(batch_size)
         return out
 
     def calculate_x_plus_minus(self):
@@ -70,7 +80,7 @@ class QuantumGenerator(nn.Module):
         state = QuantumState(n)
         x_plus_list = []
         x_minus_list = []
-        for i in range(self.n_qubit):
+        for i in range(self.ansatz.get_parameter_count()):
             ansatz_plus = self.ansatz.copy()
             ansatz_minus = self.ansatz.copy()
             parameter_i = self.ansatz.get_parameter(i)
@@ -78,11 +88,11 @@ class QuantumGenerator(nn.Module):
             ansatz_minus.set_parameter(i, parameter_i - np.pi / 2)
 
             ansatz_plus.update_quantum_state(state)
-            x_plus = state.sampling(2)
+            x_plus = state.sampling(self.batch_size)
             state.set_zero_state()
 
             ansatz_minus.update_quantum_state(state)
-            x_minus = state.sampling(2)
+            x_minus = state.sampling(self.batch_size)
             state.set_zero_state()
 
             x_plus_list.append(x_plus)
@@ -92,5 +102,7 @@ class QuantumGenerator(nn.Module):
         return x_plus_list, x_minus_list
 
     def update_parameter(self, grad):
-        params = [self.ansatz.get_parameter(i) for i in range(self.ansatz.get_parameter_count())]
-        self.optimizer.update(params, grad)
+        device = grad.device
+        params = torch.tensor([self.ansatz.get_parameter(i) for i in range(self.ansatz.get_parameter_count())]).to(device)
+        params = self.optimizer.update(params, grad)
+        self.ansatz.parameter = params

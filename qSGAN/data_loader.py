@@ -3,7 +3,7 @@ from torch.utils import data
 from torchvision import transforms
 import os
 
-from PIL import Image
+import cv2
 import numpy as np
 
 
@@ -12,9 +12,9 @@ def make_datapath_list():
     train_label_list = []
     dir_path = "../data/img_qSGAN/"
     for label in [0, 1]:
-        dir_label_path = os.path.join(dir_path, f"img_{label}")
+        dir_label_path = os.path.join(dir_path, f"img_{label}/")
         for path in os.listdir(dir_label_path):
-            train_img_list.append(path)
+            train_img_list.append(os.path.join(f"../data/img_qSGAN/img_{label}", path))
             train_label_list.append(label)
 
     return train_img_list, train_label_list
@@ -41,7 +41,7 @@ class ImageDataset(data.Dataset):
         if self.label is not None:
             label_mask = np.zeros(len(self.label))
             num_label = len(set(self.label))
-            label_mask[0:10*num_label] = 1
+            label_mask[0:13*num_label] = 1
             np.random.shuffle(label_mask)
             label_mask = torch.LongTensor(label_mask)
             return label_mask
@@ -52,7 +52,7 @@ class ImageDataset(data.Dataset):
 
     def __getitem__(self, index):
         img_path = self.data_list[index]
-        img = Image.open(img_path)
+        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
         img_transformed = self.transform(img)
 
