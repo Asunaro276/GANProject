@@ -5,7 +5,6 @@ from torch import nn
 from qulacs import ParametricQuantumCircuit, QuantumStateGpu
 from qulacs.gate import ParametricRX, ParametricRY, ParametricRZ, CNOT
 
-
 from qSGAN.utils import *
 from qSGAN.optimizer.adam import Adam
 
@@ -56,7 +55,7 @@ class HEA(ParametricQuantumCircuit):
 
 
 class QuantumGenerator(nn.Module):
-    def __init__(self, num_qubit: int, depth: int = 3, batch_size=7, optimizer=Adam()):
+    def __init__(self, num_qubit: int, depth: int = 4, batch_size=7, optimizer=Adam(lr=0.005, betas=(0.9, 0.999))):
         super(QuantumGenerator, self).__init__()
 
         self.batch_size = batch_size
@@ -77,7 +76,7 @@ class QuantumGenerator(nn.Module):
 
     def calculate_x_plus_minus(self):
         n = self.ansatz.get_qubit_count()
-        state = QuantumState(n)
+        state = QuantumStateGpu(n)
         x_plus_list = []
         x_minus_list = []
         for i in range(self.ansatz.get_parameter_count()):

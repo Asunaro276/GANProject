@@ -16,7 +16,6 @@ class Generator(nn.Module):
                                     nn.ReLU(inplace=True))
 
         self.last = nn.Sequential(nn.Linear(hidden_size, output_size),
-                                  nn.ReLU(inplace=True),
                                   nn.Sigmoid())
 
     def forward(self, x):
@@ -26,3 +25,9 @@ class Generator(nn.Module):
         out = self.last(out)
 
         return out
+
+
+if __name__ == "__main__":
+    G = Generator(input_size=1)
+    z = torch.randn(10, 1)
+    print(G(z))

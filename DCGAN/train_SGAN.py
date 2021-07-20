@@ -240,7 +240,7 @@ if __name__ == "__main__":
     from torch.utils import data
     from sklearn.model_selection import train_test_split
 
-    from generator.generator_normal import Generator
+    from generator.generator import Generator
     from discriminator.discriminator_semi import SemiSupervisedDiscriminator
     from classifier.classifier import Classifier
     from data.data_loader import ImageDataset, ImageTransform, make_datapath_list
@@ -270,11 +270,11 @@ if __name__ == "__main__":
     test_dataset = ImageDataset(data_list=test_img_list, transform=ImageTransform(mean, std),
                                  label_list=test_label_list)
 
-    batch_size = 64
+    batch_size = 128
     train_dataloader = data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-    num_epochs = 300
+    num_epochs = 100
     G_update, D_update, g_logs, d_logs, c_logs, d_accuracy, c_accuracy = train_model(G, D, C,
                                                                              train_dataloader=train_dataloader,
                                                                              test_dataloader=test_dataloader,

@@ -1,0 +1,3 @@
+from qSGAN.trainer.quantum_trainer import QuantumTrainer
+from qSGAN.trainer.classical_trainer import ClassicalTrainer
+from qSGAN.trainer.classifier_trainer import ClassifierTrainer

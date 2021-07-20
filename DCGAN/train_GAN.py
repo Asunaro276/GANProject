@@ -138,7 +138,7 @@ def visualization(G_update, train_dataloader, g_logs, d_logs):
 if __name__ == "__main__":
     from torch.utils import data
 
-    from DCGAN.generator.generator_normal import Generator
+    from DCGAN.generator.generator import Generator
     from DCGAN.discriminator.discriminator_semi import Discriminator
     from data.data_loader import UnSupervisedImageDataset, ImageTransform, make_datapath_list
 

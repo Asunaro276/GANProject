@@ -4,7 +4,7 @@ import torch
 
 class Discriminator(nn.Module):
     def __init__(self, image_size=64):
-        super(SemiSupervisedDiscriminator, self).__init__()
+        super(Discriminator, self).__init__()
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(1, image_size, kernel_size=4,
