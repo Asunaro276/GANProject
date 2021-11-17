@@ -7,13 +7,13 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
 
         self.layer1 = nn.Sequential(nn.Linear(input_size, hidden_size),
-                                    nn.ReLU(inplace=True))
+                                    nn.Tanh())
 
         self.layer2 = nn.Sequential(nn.Linear(hidden_size, hidden_size),
-                                    nn.ReLU(inplace=True))
+                                    nn.Tanh())
 
         self.layer3 = nn.Sequential(nn.Linear(hidden_size, hidden_size),
-                                    nn.ReLU(inplace=True))
+                                    nn.Tanh())
 
         self.last = nn.Sequential(nn.Linear(hidden_size, output_size),
                                   nn.Sigmoid())

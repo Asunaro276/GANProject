@@ -88,7 +88,7 @@ class ClassicalTrainer:
             epoch_g_loss += g_loss.item() / batch_size
             epoch_d_loss += d_loss.item() / batch_size
 
-        fake_images = wandb.Image(fake_images.cpu().detach().numpy(), caption="Top: Output, Bottom: Input")
+        fake_images = wandb.Image(fake_images.cpu().detach().numpy())
         wandb.log({"example": fake_images})
 
         return epoch_g_loss, epoch_d_loss
@@ -128,22 +128,32 @@ class ClassicalTrainer:
             g_loss_list.append(g_loss)
             d_loss_list.append(d_loss)
 
-            accuracy = self.valid_one_cycle()
-            accuracy_list.append(accuracy)
+            if self.num_classes is not None:
+                accuracy = self.valid_one_cycle()
+                accuracy_list.append(accuracy)
 
-            if epoch % log_freq == 0:
-                t_finish = time()
-                print("-"*40)
-                print(f"Epoch: {epoch} ||G_Loss: {g_loss} ||D_Loss: {d_loss} ||Epoch_Accuracy: {accuracy} ||Timer: {t_finish - t_start}")
-                t_start = time()
+                if epoch % log_freq == 0:
+                        t_finish = time()
+                        print("-"*40)
+                        print(f"Epoch: {epoch} ||G_Loss: {g_loss} ||D_Loss: {d_loss} ||Epoch_Accuracy: {accuracy} ||Timer: {t_finish - t_start}")
+                        t_start = time()
 
-            wandb.log({"G_Loss": g_loss,
-                       "D_Loss": d_loss,
-                       "Epoch_Accuracy": accuracy})
+                wandb.log({"G_Loss": g_loss,
+                           "D_Loss": d_loss,
+                           "Epoch_Accuracy": accuracy})
 
-            if accuracy > best_accuracy:
-                wandb.run.summary["best_accuracy"] = accuracy
-                best_accuracy = accuracy
+                if accuracy > best_accuracy:
+                    wandb.run.summary["best_accuracy"] = accuracy
+                    best_accuracy = accuracy
+            else:
+                if epoch % log_freq == 0:
+                    t_finish = time()
+                    print("-" * 40)
+                    print(f"Epoch: {epoch} ||G_Loss: {g_loss} ||D_Loss: {d_loss} ||Timer: {t_finish - t_start}")
+                    t_start = time()
+                wandb.log({"G_Loss": g_loss,
+                           "D_Loss": d_loss})
+
 
         return g_loss_list, d_loss_list, accuracy_list
 

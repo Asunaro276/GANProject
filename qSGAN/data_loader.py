@@ -7,6 +7,18 @@ import cv2
 import numpy as np
 
 
+def make_mnist_datapath_list(label_list, num_data):
+    train_img_list = []
+    train_label_list = []
+    for label in label_list:
+        dir_path = f"../data/img_{label}/"
+        for path in os.listdir(dir_path):
+            train_img_list.append(os.path.join(dir_path, path))
+            train_label_list.append(label)
+
+    return train_img_list, train_label_list
+
+
 def make_01_datapath_list():
     train_img_list = []
     train_label_list = []
@@ -64,6 +76,18 @@ class ImageTransform:
         self.data_transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean, std)])
+
+    def __call__(self, img):
+        return self.data_transform(img)
+
+
+class MNISTTransform:
+    def __init__(self, mean, std):
+        self.data_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize(8),
+            transforms.Normalize(mean, std),
+        ])
 
     def __call__(self, img):
         return self.data_transform(img)
